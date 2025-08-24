@@ -20,7 +20,13 @@
     {% endfor %}
 </div>
     <div class="chat-container" style="width: 70%;">
-        <div id="chat-box"></div>
+        <div id="chat-box">
+            {% if chats %}
+    {% for user_msg, response in chats %}
+      <div class="chat-bubble user">{{ user_msg }}</div>
+      <div class="chat-bubble bot">{{ response }}</div>
+    {% endfor %}
+  {% endif %}</div>
         <div class="input-area">
             <input type="text" id="user-input" placeholder="Type your message...">
             <button onclick="sendMessage()">Send</button>

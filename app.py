@@ -87,53 +87,7 @@ def chat():
 
 
 
-"""
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_message = request.json.get('message')
-    response = generate_response(user_message)
 
-    # Ensure session_id exists
-    if 'session_id' not in session:
-        session['session_id'] = str(uuid.uuid4())
-
-    conn = sqlite3.connect('chat_history.db')
-    c = conn.cursor()
-
-    # Count messages in the session
-    c.execute("SELECT COUNT(*) FROM chats WHERE session_id = ?", (session['session_id'],))
-    count = c.fetchone()[0]
-
-    # Determine session name
-    session_name = session.get('session_name')
-
-    if count == 0:
-        session_name = generate_session_title(user_message)
-        session['session_name'] = session_name
-    elif not session_name:
-        # Try fetching from DB if not in session
-        c.execute("SELECT session_name FROM chats WHERE session_id = ? AND session_name IS NOT NULL", (session['session_id'],))
-        row = c.fetchone()
-        if row:
-            session_name = row[0]
-            session['session_name'] = session_name
-
-    # Insert message into DB
-    if count == 0:
-        c.execute("INSERT INTO chats (session_id, user_message, response, session_name) VALUES (?, ?, ?, ?)",
-                  (session['session_id'], user_message, response, session_name))
-    else:
-        c.execute("INSERT INTO chats (session_id, user_message, response) VALUES (?, ?, ?)",
-                  (session['session_id'], user_message, response))
-
-    print("Saving to DB:", user_message, response, session['session_id'], session_name)
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({'reply': response})
-
-"""
 
 
 def init_db():
@@ -155,14 +109,28 @@ def init_db():
 def load_session(session_id):
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
+    
+    # Fetch messages for this session
     c.execute("SELECT user_message, response FROM chats WHERE session_id = ? ORDER BY timestamp", (session_id,))
     chats = c.fetchall()
+    
+    # Fetch all sessions for sidebar
+    c.execute("""
+        SELECT DISTINCT session_id, session_name, MIN(timestamp)
+        FROM chats
+        WHERE session_name IS NOT NULL
+        GROUP BY session_id
+        ORDER BY MIN(timestamp) DESC
+    """)
+    sessions = c.fetchall()
+
     conn.close()
 
-    # Set the current session ID so future chats go to this one
+    # Save the current session in memory
     session['session_id'] = session_id
 
-    return render_template('chat.html', chats=chats) 
+    # Pass both chats and sessions to the template
+    return render_template('chat.html', chats=chats, sessions=sessions)
 
 def generate_session_title(user_input):
     try:
