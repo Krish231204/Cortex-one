@@ -1,0 +1,21 @@
+# Ignore Python cache files
+__pycache__/
+
+# Ignore virtual environments
+venv/
+
+# Ignore environment variables file
+.env
+
+# Ignore SQLite database files
+chat_history.db
+*.sqlite3
+
+# Ignore Mac system files
+.DS_Store
+
+# VS Code settings (optional)
+.vscode/
+
+# Log files (optional)
+*.log
