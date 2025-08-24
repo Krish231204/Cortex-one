@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat History</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2 class="chat-title">Chat History</h2>
+    <div class="chat-container">
+        <div id="chat-box">
+            {% for session_id, messages in history.items() %}
+    <h3 style="color:#bbb; margin-top: 25px;">Session ID: {{ session_id }}</h3>
+    {% for user, bot, time in messages %}
+        <div class="chat-message user"><strong>You:</strong> {{ user }}</div>
+        <div class="chat-message bot"><strong>Bot:</strong> {{ bot }}</div>
+        <div style="font-size: 0.7rem; color: #999; margin-bottom: 10px;">{{ time }}</div>
+    {% endfor %}
+{% endfor %}
+        </div>
+        <div style="margin-top: 20px;">
+            <a href="/" style="color: #0d6efd;">← Back to chat</a>
+        </div>
+    </div>
+</body>
+</html>

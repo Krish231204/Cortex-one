@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2 class="chat-title"></h2>
+    <div style="width: 30%; max-width: 300px; background-color: #1a1a1a; padding: 20px; border-right: 1px solid #333; overflow-y: auto;">
+    <h3 style="color: #ccc; margin-bottom: 15px;">💬 Sessions</h3>
+    <div style="margin-bottom: 10px;">
+    <a href="/new" style="color: #0d6efd; font-weight: bold;">+ New Chat</a>
+    </div>
+    {% for session_id, name, timestamp in sessions %}
+        <div style="margin-bottom: 10px;">
+            <a href="/session/{{ session_id }}" style="color: #0d6efd;">
+                {{ name or 'Untitled Session' }}
+            </a>
+        </div>
+    {% endfor %}
+</div>
+    <div class="chat-container" style="width: 70%;">
+        <div id="chat-box"></div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <div style="display: flex; width: 100%; max-width: 1200px; margin: auto;"></div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const userMessage = userInput.value.trim();
+
+            if (userMessage === '') {
+                alert("Please type a message before sending.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage }),
+                });
+
+                if (!response.ok) throw new Error("Network response was not ok");
+
+                const data = await response.json();
+                const chatBox = document.getElementById('chat-box');
+                chatBox.innerHTML += `<div class="chat-message user"><span>${userMessage}</span></div>`;
+                chatBox.innerHTML += `<div class="chat-message bot"><span>${data.reply}</span></div>`;
+                userInput.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error("Error sending message:", error);
+                document.getElementById('chat-box').innerHTML += `<p><em>Error: Failed to send message.</em></p>`;
+            }
+        }
+
+        document.getElementById('user-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+    
+</div>    
+</body>
+</html>
