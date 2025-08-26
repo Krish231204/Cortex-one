@@ -19,6 +19,33 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route('/')
 def home():
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4())
+        session_name = generate_session_title("New chat started")
+        session['session_name'] = session_name
+
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        c.execute("""
+            INSERT INTO chats (session_id, user_message, response, session_name)
+            VALUES (?, ?, ?, ?)
+        """, (session['session_id'], "", "", session_name))
+        conn.commit()
+        conn.close()
+    else:
+        conn = sqlite3.connect('chat_history.db')
+        c = conn.cursor()
+        c.execute("""
+            SELECT DISTINCT session_id, session_name, MIN(timestamp)
+            FROM chats
+            WHERE session_name IS NOT NULL
+            GROUP BY session_id
+            ORDER BY MIN(timestamp) DESC
+        """)
+        sessions = c.fetchall()
+        conn.close()
+        return render_template('chat.html', sessions=sessions)
+
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
     c.execute("""
@@ -29,8 +56,8 @@ def home():
         ORDER BY MIN(timestamp) DESC
     """)
     sessions = c.fetchall()
-    conn.commit()
     conn.close()
+
     return render_template('chat.html', sessions=sessions)
 
 @app.route('/new')
