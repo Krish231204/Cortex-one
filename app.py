@@ -10,8 +10,6 @@ import uuid
 
 
 
-load_dotenv()
-
 app = Flask(__name__)
 app.secret_key = '231204'  # Can be any random string for now
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -191,4 +189,4 @@ def generate_response(message):
 
 if __name__ == '__main__':
     init_db()  # ← call it here!
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
