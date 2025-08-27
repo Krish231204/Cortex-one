@@ -16,7 +16,6 @@ app = Flask(__name__)
 app.secret_key = '231204'  # Can be any random string for now
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-
 @app.route('/')
 def home():
     if 'session_id' not in session:
@@ -32,19 +31,6 @@ def home():
         """, (session['session_id'], "", "", session_name))
         conn.commit()
         conn.close()
-    else:
-        conn = sqlite3.connect('chat_history.db')
-        c = conn.cursor()
-        c.execute("""
-            SELECT DISTINCT session_id, session_name, MIN(timestamp)
-            FROM chats
-            WHERE session_name IS NOT NULL
-            GROUP BY session_id
-            ORDER BY MIN(timestamp) DESC
-        """)
-        sessions = c.fetchall()
-        conn.close()
-        return render_template('chat.html', sessions=sessions)
 
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
