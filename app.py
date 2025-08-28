@@ -4,12 +4,13 @@ from openai import OpenAI
 import openai
 import os
 from dotenv import load_dotenv
+load_dotenv()
 import sqlite3  # for database handling
 from datetime import datetime  # to store timestamps
 import uuid
 
 
-
+print("Loaded API Key:", os.getenv("OPENAI_API_KEY"))
 app = Flask(__name__)
 app.secret_key = '231204'  # Can be any random string for now
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -121,9 +122,16 @@ def load_session(session_id):
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
     
-    # Fetch messages for this session
-    c.execute("SELECT user_message, response FROM chats WHERE session_id = ? ORDER BY timestamp", (session_id,))
-    chats = c.fetchall()
+    
+    # Fetch chats with timestamps
+    c.execute("SELECT user_message, response, timestamp FROM chats WHERE session_id = ? ORDER BY timestamp", (session_id,))
+    raw_chats = c.fetchall()
+
+    # Format timestamps
+    chats = []
+    for user_msg, bot_msg, ts in raw_chats:
+        formatted_time = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").strftime("%b %d %I:%M %p")
+        chats.append((user_msg, bot_msg, formatted_time))
     
     # Fetch all sessions for sidebar
     c.execute("""
@@ -189,4 +197,4 @@ def generate_response(message):
 
 if __name__ == '__main__':
     init_db()  # ← call it here!
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5050)))
