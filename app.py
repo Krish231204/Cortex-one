@@ -17,20 +17,16 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route('/')
 def home():
-    if 'session_id' not in session:
-        session['session_id'] = str(uuid.uuid4())
-        session_name = generate_session_title("New chat started")
-        session['session_name'] = session_name
+    return redirect('/new')
 
-        conn = sqlite3.connect('chat_history.db')
-        c = conn.cursor()
-        c.execute("""
-            INSERT INTO chats (session_id, user_message, response, session_name)
-            VALUES (?, ?, ?, ?)
-        """, (session['session_id'], "", "", session_name))
-        conn.commit()
-        conn.close()
+@app.route('/new')
+def new_chat():
+    session['session_id'] = str(uuid.uuid4())
+    session.pop('session_name', None)
+    return redirect('/chat_ui')
 
+@app.route('/chat_ui')
+def chat_ui():
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()
     c.execute("""
@@ -43,15 +39,7 @@ def home():
     sessions = c.fetchall()
     conn.close()
 
-    return render_template('chat.html', sessions=sessions)
-
-@app.route('/new')
-def new_chat():
-    session['session_id'] = str(uuid.uuid4())
-    session.pop('session_name', None)
-    return redirect('/')
-
-
+    return render_template('chat.html', sessions=sessions, chats=[])
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -61,6 +49,7 @@ def chat():
     # Ensure session_id exists
     if 'session_id' not in session:
         session['session_id'] = str(uuid.uuid4())
+        session['session_name'] = None        
 
     conn = sqlite3.connect('chat_history.db')
     c = conn.cursor()

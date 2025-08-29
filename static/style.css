@@ -83,13 +83,6 @@ body {
 }
 
 
-.chat-bubble {
-  margin: 10px;
-  padding: 12px;
-  border-radius: 12px;
-  max-width: 80%;
-  line-height: 1.5;
-}
 
 .chat-bubble.user {
   background-color: #0d6efd;
@@ -117,6 +110,32 @@ button {
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+
+.chat-bubble {
+  background-color: #f1f0f0;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  max-width: 70%;
+  position: relative;
+}
+
+.user {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.bot {
+  align-self: flex-start;
+  background-color: #ffffff;
+}
+
+.timestamp {
+  font-size: 10px;
+  color: gray;
+  text-align: right;
+  margin-top: 4px;
 }
 
 button:hover {

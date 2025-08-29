@@ -34,14 +34,15 @@
             <div id="chat-box" style="flex-grow: 1; overflow-y: auto;">
                 {% if chats %}
                     {% for user_msg, bot_msg, timestamp in chats %}
-                        <div class="chat-message user">
-                            <div class="message-text">{{ user_msg }}</div>
-                            <div class="timestamp">{{ timestamp }}</div>
+                        <div class="chat-bubble user">
+                        <p>{{ user_msg }}</p>
+                        <div class="timestamp">{{ timestamp }}</div>
                         </div>
-                        <div class="chat-message bot">
-                            <div class="message-text">{{ bot_msg }}</div>
-                            <div class="timestamp">{{ timestamp }}</div>
-                        </div>
+
+                        <div class="chat-bubble bot">
+                        <p>{{ bot_msg }}</p>
+                        <div class="timestamp">{{ timestamp }}</div>
+                        </div>                        
                     {% endfor %}
                 {% endif %}
             </div>
