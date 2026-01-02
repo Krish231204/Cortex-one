@@ -90,8 +90,6 @@ Open http://localhost:5050 in your browser.
 
 This project is licensed under the MIT License.
 
-📌 Replace `https://cortex-one-wep1.onrender.com/chat_ui` with your actual Render URL.
-
 ---
 
 # ✅ 2️⃣ `.gitignore` (CRITICAL — DO THIS)
