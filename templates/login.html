@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Sign in · CortexOne{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<main class="auth-card">
+  <h1 class="brand">CortexOne</h1>
+  <p class="auth-sub">Sign in to your conversations.</p>
+
+  {% if errors %}
+    <div class="alert" role="alert">
+      {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('auth.login') }}" class="auth-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ email }}"
+           autocomplete="username" required autofocus>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password"
+           autocomplete="current-password" required>
+
+    <button type="submit" class="btn-primary">Sign in</button>
+  </form>
+
+  <p class="auth-alt">
+    No account yet? <a href="{{ url_for('auth.register') }}">Create one</a>
+  </p>
+</main>
+{% endblock %}

@@ -1,23 +1,32 @@
-# Ignore Python cache files
-__pycache__/
-
-# Ignore virtual environments
-venv/
-
-# Ignore environment variables file
+# Secrets — never commit
 .env
+.env.*
+!.env.example
 
-# Ignore SQLite database files
-chat_history.db
+# Local databases (the old SQLite file lives here during migration)
+*.db
+*.db.local
+*.sqlite
 *.sqlite3
 
-# Ignore Mac system files
-.DS_Store
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
 
-# VS Code settings (optional)
+# Tooling
+.claude/settings.local.json
+.vercel/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .vscode/
+.idea/
 
-# Log files (optional)
-*.log
-
+# OS
 .DS_Store
+
+# Logs
+*.log

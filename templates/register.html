@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Create account · CortexOne{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<main class="auth-card">
+  <h1 class="brand">CortexOne</h1>
+  <p class="auth-sub">Create an account. Your chats stay private to it.</p>
+
+  {% if errors %}
+    <div class="alert" role="alert">
+      {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ email }}"
+           autocomplete="username" required autofocus>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password"
+           autocomplete="new-password" minlength="10" required>
+    <p class="field-hint">At least 10 characters.</p>
+
+    <button type="submit" class="btn-primary">Create account</button>
+  </form>
+
+  <p class="auth-alt">
+    Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a>
+  </p>
+</main>
+{% endblock %}

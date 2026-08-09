@@ -1,99 +1,76 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>CortexOne</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body style="margin: 0; font-family: sans-serif; background-color: #121212; color: white;">
+{% extends "base.html" %}
+{% block title %}{{ (conversation.title if conversation else None) or 'New chat' }} · CortexOne{% endblock %}
+{% block body_class %}chat-page{% endblock %}
 
-    <!-- Title Bar -->
-    <h1 style="text-align: center; color: white; background-color: #1a1a1a; padding: 25px 0; margin: 1;">
-        CortexOne
-    </h1>
+{% block content %}
+<div class="layout" data-conversation-id="{{ conversation.id if conversation else '' }}">
 
-    <!-- Flex Container: Sessions Sidebar + Chat Area -->
-    <div style="display: flex; width: 100%; height: calc(100vh - 60px);">
-
-        <!-- Sidebar: Sessions -->
-        <div style="width: 30%; max-width: 300px; background-color: #1a1a1a; padding: 20px; border-right: 1px solid #333; overflow-y: auto;">
-            <h2 style="color: #ccc; margin-bottom: 15px; padding-left: 45px;">💬 Sessions</h2>
-            <div style="margin-bottom: 10px;">
-                <a href="/new" style="color: #eff2f6; font-weight: bold; padding-left: 45px;"> New Chat</a>
-            </div>
-            {% for session_id, name, timestamp in sessions %}
-                <div style="margin-bottom: 10px;">
-                    <a href="/session/{{ session_id }}" style="color: #c5d2e5;  padding-left: 45px;">
-                        {{ name or 'Untitled Session' }}
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
-
-        <!-- Main Chat Area -->
-        <div class="chat-container" style="flex-grow: 1; padding: 20px; display: flex; flex-direction: column; overflow-y: auto;">
-            <div id="chat-box" style="flex-grow: 1; overflow-y: auto;">
-                {% if chats %}
-                    {% for user_msg, bot_msg, timestamp in chats %}
-                        <div class="chat-bubble user">
-                        <p>{{ user_msg }}</p>
-                        <div class="timestamp">{{ timestamp }}</div>
-                        </div>
-
-                        <div class="chat-bubble bot">
-                        <p>{{ bot_msg }}</p>
-                        <div class="timestamp">{{ timestamp }}</div>
-                        </div>                        
-                    {% endfor %}
-                {% endif %}
-            </div>
-            <div class="input-area" style="margin-top: 20px;">
-                <input type="text" id="user-input" placeholder="Type your message..." style="width: 80%;">
-                <button onclick="sendMessage()">Send</button>
-            </div>
-        </div>
-
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <span class="brand">CortexOne</span>
+      <a class="btn-new" href="{{ url_for('chat.index') }}">New chat</a>
     </div>
 
-    <!-- Script -->
-    <script>
-        async function sendMessage() {
-            const userInput = document.getElementById('user-input');
-            const userMessage = userInput.value.trim();
+    <nav class="conversations" id="conversation-list" aria-label="Your conversations">
+      {% for c in conversations %}
+        <div class="conv{{ ' is-active' if conversation and c.id == conversation.id else '' }}"
+             data-id="{{ c.id }}">
+          <a class="conv-link" href="{{ url_for('chat.view_conversation', conversation_id=c.id) }}">
+            {{ c.title or 'New chat' }}
+          </a>
+          <div class="conv-actions">
+            <button type="button" class="icon-btn" data-action="rename"
+                    aria-label="Rename conversation">Rename</button>
+            <button type="button" class="icon-btn danger" data-action="delete"
+                    aria-label="Delete conversation">Delete</button>
+          </div>
+        </div>
+      {% else %}
+        <p class="empty-hint">No conversations yet.</p>
+      {% endfor %}
+    </nav>
 
-            if (userMessage === '') {
-                alert("Please type a message before sending.");
-                return;
-            }
+    <div class="sidebar-foot">
+      <span class="user-email" title="{{ user.email }}">{{ user.email }}</span>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="link-btn">Sign out</button>
+      </form>
+    </div>
+  </aside>
 
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ message: userMessage }),
-                });
+  <main class="main">
+    <div class="thread" id="thread">
+      {% if messages %}
+        {% for m in messages %}
+          <article class="msg msg-{{ m.role }}">
+            <div class="msg-role">{{ 'You' if m.role == 'user' else 'CortexOne' }}</div>
+            <div class="msg-body" data-markdown>{{ m.content }}</div>
+            <time class="msg-time" datetime="{{ m.created_at.isoformat() }}"
+                  data-timestamp="{{ m.created_at.isoformat() }}"></time>
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="welcome">
+          <h1>Start a conversation</h1>
+          <p>CortexOne remembers everything said in this chat, and only you can see it.</p>
+        </div>
+      {% endif %}
+    </div>
 
-                if (!response.ok) throw new Error("Network response was not ok");
+    <div class="composer">
+      <div class="composer-error" id="composer-error" role="alert" hidden></div>
+      <form id="composer-form" class="composer-form">
+        <textarea id="composer-input" rows="1" placeholder="Send a message…"
+                  autocomplete="off" autofocus></textarea>
+        <button type="submit" id="send-btn" class="btn-primary">Send</button>
+      </form>
+      <p class="composer-hint">Enter to send · Shift+Enter for a new line</p>
+    </div>
+  </main>
+</div>
+{% endblock %}
 
-                const data = await response.json();
-                const chatBox = document.getElementById('chat-box');
-                chatBox.innerHTML += `<div class="chat-message user"><span>${userMessage}</span></div>`;
-                chatBox.innerHTML += `<div class="chat-message bot"><span>${data.reply}</span></div>`;
-                userInput.value = '';
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (error) {
-                console.error("Error sending message:", error);
-                document.getElementById('chat-box').innerHTML += `<p><em>Error: Failed to send message.</em></p>`;
-            }
-        }
-
-        document.getElementById('user-input').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-    </script>
-
-</body>
-</html>
+{% block scripts %}
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% endblock %}
