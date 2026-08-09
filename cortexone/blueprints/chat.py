@@ -210,5 +210,7 @@ def api_chat():
     response = current_app.response_class(generate(), mimetype="text/event-stream")
     response.headers["Cache-Control"] = "no-cache, no-transform"
     response.headers["X-Accel-Buffering"] = "no"  # stop proxies buffering the stream
-    response.headers["Connection"] = "keep-alive"
+    # No `Connection: keep-alive` here. It is a connection-specific header that
+    # HTTP/2 forbids, and Vercel serves HTTP/2 — sending it risks the client
+    # mishandling where the response ends.
     return response

@@ -263,9 +263,22 @@
 
   /* ---------- streaming ---------- */
 
-  function streamReply(message, bodyEl) {
+  function streamReply(message, bodyEl, onFinish) {
     var raw = '';
     var pending = false;
+    var finished = false;
+
+    // The server's `done` event means the reply is complete. Waiting instead
+    // for the fetch promise to settle ties the UI to the connection actually
+    // closing, which is not the same thing — behind HTTP/2 the response can
+    // stay open after the body ends, leaving the composer disabled until the
+    // page is reloaded. Unblock on the semantic signal, and keep the transport
+    // close as a backstop for when the stream dies without a `done`.
+    function finish() {
+      if (finished) { return; }
+      finished = true;
+      onFinish();
+    }
 
     function paint() {
       pending = false;
@@ -316,12 +329,13 @@
         } else if (payload.type === 'done') {
           if (payload.title) { upsertConversation(payload.conversation_id, payload.title); }
           paint();
+          finish();
         }
       }
 
       function pump() {
         return reader.read().then(function (result) {
-          if (result.done) { paint(); return; }
+          if (result.done) { paint(); finish(); return; }
 
           buffer += decoder.decode(result.value, { stream: true });
           var frames = buffer.split('\n\n');
@@ -375,13 +389,15 @@
       var bodyEl = addMessage('assistant', '');
       bodyEl.classList.add('is-streaming');
 
-      streamReply(message, bodyEl)
+      function release() {
+        bodyEl.classList.remove('is-streaming');
+        setBusy(false);
+        input.focus();
+      }
+
+      streamReply(message, bodyEl, release)
         .catch(function (err) { showError(err.message); })
-        .then(function () {
-          bodyEl.classList.remove('is-streaming');
-          setBusy(false);
-          input.focus();
-        });
+        .then(release);   // idempotent — whichever signal lands first wins
     });
   }
 
