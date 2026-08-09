@@ -2,6 +2,7 @@
 
 import os
 
+import psycopg
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 
@@ -66,6 +67,20 @@ def create_app():
         if request.path.startswith("/api/"):
             return jsonify(error="Not found"), 404
         return jsonify(error="Not found"), 404
+
+    @app.errorhandler(psycopg.errors.UndefinedTable)
+    def schema_missing(_err):
+        # Distinguish "you never ran the migration" from a genuine bug. Without
+        # this it surfaces as an opaque 500 and looks like broken code rather
+        # than an empty database.
+        app.logger.exception("Query hit a missing table on %s", request.path)
+        return (
+            jsonify(
+                error="Database schema is not initialised. Run migrations/001_init.sql "
+                "against the database DATABASE_URL points at, then reload."
+            ),
+            503,
+        )
 
     @app.errorhandler(500)
     def server_error(_err):

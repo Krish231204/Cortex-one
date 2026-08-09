@@ -3,7 +3,7 @@
 Each test here corresponds to something the previous version got wrong.
 """
 
-import json
+import os
 
 import pytest
 
@@ -292,3 +292,25 @@ def test_misconfigured_app_does_not_echo_secret_values(monkeypatch):
 
     body = create_app().test_client().get("/").data.decode()
     assert "hunter2" not in body and "db.example.com" not in body
+
+
+def test_missing_schema_reports_uninitialised_database(app):
+    """An empty database must say so, not surface as a generic 500."""
+    import psycopg
+
+    with psycopg.connect(os.environ["DATABASE_URL"], prepare_threshold=None) as conn:
+        conn.execute("DROP TABLE IF EXISTS messages, conversations, users CASCADE")
+        conn.commit()
+
+    client = app.test_client()
+    client.get("/login")  # seeds the CSRF token; this path touches no tables
+    response = client.post(
+        "/login",
+        data={
+            "email": "a@example.com",
+            "password": "whatever-long-enough",
+            "csrf_token": csrf_of(client),
+        },
+    )
+    assert response.status_code == 503
+    assert b"schema is not initialised" in response.data
