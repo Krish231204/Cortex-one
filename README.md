@@ -5,6 +5,12 @@ Vercel Function.
 
 Every conversation belongs to an account. Nobody can read anybody else's.
 
+**Live:** <https://cortex-one-three.vercel.app>
+
+It opens on a sign-in page, and that is the point — there is no anonymous view,
+because there is nothing that can be shown without knowing whose conversation it
+is. Create an account to try it; you will see only your own chats.
+
 ---
 
 ## ⚠️ Read this first if you ran the old version
