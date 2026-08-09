@@ -262,3 +262,33 @@ def test_production_refuses_to_boot_without_secret_key(monkeypatch):
     monkeypatch.delenv("SECRET_KEY", raising=False)
     with pytest.raises(ConfigError, match="SECRET_KEY"):
         Config()
+
+
+def test_missing_config_serves_a_readable_503_instead_of_crashing(monkeypatch):
+    """A misconfigured deploy must name the problem, not crash opaquely."""
+    from cortexone import create_app
+
+    monkeypatch.setenv("FLASK_ENV", "production")
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+
+    client = create_app().test_client()
+    for path in ("/", "/login", "/chat", "/api/conversations"):
+        response = client.get(path)
+        assert response.status_code == 503, path
+        assert b"SECRET_KEY" in response.data
+
+    # Inert: no session cookie is issued and no real route is reachable.
+    assert client.post("/api/chat", json={"message": "hi"}).status_code == 503
+    assert not any("cortexone_session" in h for h in
+                   client.get("/").headers.getlist("Set-Cookie"))
+
+
+def test_misconfigured_app_does_not_echo_secret_values(monkeypatch):
+    from cortexone import create_app
+
+    monkeypatch.setenv("FLASK_ENV", "production")
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:hunter2@db.example.com/x")
+
+    body = create_app().test_client().get("/").data.decode()
+    assert "hunter2" not in body and "db.example.com" not in body
