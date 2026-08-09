@@ -52,13 +52,35 @@ def main():
     for model_id in chat:
         print(f"  {model_id}")
 
-    configured = os.environ.get("OPENAI_MODEL", "gpt-5.6")
+    configured = os.environ.get("OPENAI_MODEL", "gpt-5.6-sol")
     title = os.environ.get("OPENAI_TITLE_MODEL", "gpt-5.6-luna")
     print()
     for label, value in (("OPENAI_MODEL", configured), ("OPENAI_TITLE_MODEL", title)):
         mark = "OK " if value in models else "!! "
         note = "" if value in models else "  <- not in your account's list"
         print(f"{mark}{label}={value}{note}")
+
+    # Listing models succeeds even with no credit on the account, so it proves
+    # only that the key is real. Bill a couple of tokens to find out whether
+    # the account can actually complete anything — this is the difference
+    # between "key works" and "the app works".
+    print(f"\nSending a minimal completion to {configured} ...")
+    try:
+        reply = client.chat.completions.create(
+            model=configured,
+            messages=[{"role": "user", "content": "Reply with the single word: ok"}],
+        )
+    except RateLimitError:
+        sys.exit(
+            "OUT OF QUOTA. The key is valid but the account cannot spend. Add a "
+            "payment method and credit at platform.openai.com/settings/organization/billing.\n"
+            "No model name will fix this."
+        )
+    except Exception as exc:  # noqa: BLE001 - report whatever the API said
+        sys.exit(f"Completion failed: {type(exc).__name__}: {exc}")
+
+    print(f"Model replied: {reply.choices[0].message.content!r}")
+    print("\nEverything the app needs is working. Use these same values on Vercel.")
 
 
 if __name__ == "__main__":

@@ -53,8 +53,8 @@ class Config:
         # endpoint, or at a local stub during testing.
         self.openai_base_url = os.environ.get("OPENAI_BASE_URL", "").strip() or None
 
-        self.model = os.environ.get("OPENAI_MODEL", "gpt-5.4-mini").strip()
-        self.title_model = os.environ.get("OPENAI_TITLE_MODEL", "gpt-5.4-nano").strip()
+        self.model = os.environ.get("OPENAI_MODEL", "gpt-5.6-sol").strip()
+        self.title_model = os.environ.get("OPENAI_TITLE_MODEL", "gpt-5.6-luna").strip()
 
         self.max_context_messages = _int("MAX_CONTEXT_MESSAGES", 20)
         self.max_context_chars = _int("MAX_CONTEXT_CHARS", 24_000)

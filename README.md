@@ -198,8 +198,8 @@ tests/                    Security and behaviour tests
 | `DATABASE_URL` | — | Required; use the pooled Neon endpoint |
 | `OPENAI_API_KEY` | — | Required |
 | `OPENAI_BASE_URL` | unset | For OpenAI-compatible proxies |
-| `OPENAI_MODEL` | `gpt-5.4-mini` | **Verify against your account's model list** — OpenAI's lineup changes often and a stale id returns a 404 |
-| `OPENAI_TITLE_MODEL` | `gpt-5.4-nano` | Same caveat |
+| `OPENAI_MODEL` | `gpt-5.6-sol` | **Verify against your account's model list** — OpenAI's lineup changes often and a stale id returns a 404 |
+| `OPENAI_TITLE_MODEL` | `gpt-5.6-luna` | Same caveat |
 | `MAX_CONTEXT_MESSAGES` | `20` | Prior turns replayed to the model |
 | `MAX_CONTEXT_CHARS` | `24000` | Character budget for that history |
 | `RATE_LIMIT_PER_HOUR` | `120` | Per user; `0` disables |
