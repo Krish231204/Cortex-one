@@ -11,7 +11,7 @@ Every conversation belongs to an account. Nobody can read anybody else's.
 
 The previous build had three problems that need action, not just a code change:
 
-1. **Rotate your OpenAI key.** The old `app.py` ran
+1. **Rotate your OpenAI key.** *(Done — rotated 9 Aug 2026.)* The old `app.py` ran
    `print("Loaded API Key:", os.getenv("OPENAI_API_KEY"))` on every boot, which
    wrote the full key into Render's log stream. The key was never committed to
    git — the whole history was scanned and it is clean — but assume anything in
@@ -79,7 +79,19 @@ pip install -r requirements.txt
 python scripts/init_db.py
 ```
 
-### 4. Run
+### 4. Check the OpenAI key before running
+
+```bash
+python scripts/check_openai.py
+```
+
+Reads the key from `.env`, never from an argument, so it cannot land in shell
+history. It lists the models your account can reach, flags `OPENAI_MODEL` if it
+is not among them, and then sends a two-token completion — because
+`/v1/models` succeeds on an account with **no credit**, so listing models alone
+proves nothing about whether the app will work.
+
+### 5. Run
 
 ```bash
 python app.py
@@ -131,6 +143,33 @@ database connection; every warm invocation reuses both.
 
 ---
 
+## 🩺 When a deploy doesn't work
+
+Four failures account for essentially every problem hitting this app for the
+first time. The app tries to name each one rather than returning a generic 500,
+because all four otherwise look identical from the browser.
+
+| What you see | Cause | Fix |
+|---|---|---|
+| `FUNCTION_INVOCATION_FAILED`, or the process exits at startup | Nothing is set — the config raised before Flask started | Set the three required variables. Versions after `86ce4d6` serve a readable 503 instead of crashing |
+| **503** — *"CortexOne is not configured. `X` is not set"* | That variable is missing | Add it, then **redeploy** — environment variables only apply to new builds |
+| **503** — *"Database schema is not initialised"* | Tables don't exist, or `DATABASE_URL` points at a different database than the one you ran the migration on | Run `migrations/001_init.sql`. On Neon check the branch **and** database in the SQL editor dropdown — the default `neondb` is often not the one the app uses |
+| **"The model request failed"** in the chat UI | Bad key, no credit, or a model id your account cannot reach | `python scripts/check_openai.py` separates the three |
+
+The config check runs in order — `SECRET_KEY`, `DATABASE_URL`, `OPENAI_API_KEY`
+— and reports only the first thing missing, so expect to fix them one at a time.
+
+**The app boots and serves the login page without any tables.** Registration is
+the first thing that touches the database, so a successful-looking deploy can
+still be one step from done.
+
+**On Neon, use the pooled connection string** (host contains `-pooler`). The
+pool disables prepared statements because PgBouncer runs in transaction mode,
+where server-side prepared statements do not survive; without that you get
+sporadic *"prepared statement already exists"* errors under load.
+
+---
+
 ## 🔐 What the rebuild fixed
 
 | Issue | Before | Now |
@@ -153,7 +192,7 @@ per-user hourly message cap (`RATE_LIMIT_PER_HOUR`).
 
 ## 🧪 Tests
 
-The suite covers the vulnerabilities above as regressions — cross-user reads,
+**32 tests.** They cover the vulnerabilities above as regressions — cross-user reads,
 writes, renames and deletes; CSRF; escaping; and the conversation-memory and
 streaming behaviour.
 
@@ -183,7 +222,7 @@ cortexone/
   blueprints/auth.py      Register / login / logout
   blueprints/chat.py      Pages, conversation CRUD, SSE endpoint
 migrations/001_init.sql   Schema
-scripts/                  init_db, SQLite migration
+scripts/                  init_db, check_openai, SQLite migration
 templates/  static/       UI
 tests/                    Security and behaviour tests
 ```
