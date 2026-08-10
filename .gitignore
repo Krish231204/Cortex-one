@@ -17,7 +17,6 @@ venv/
 *.egg-info/
 
 # Tooling
-.claude/settings.local.json
 .vercel/
 .pytest_cache/
 .mypy_cache/
