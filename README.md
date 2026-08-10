@@ -15,7 +15,7 @@ is. Create an account to try it; you will see only your own chats.
 
 ## ⚠️ Read this first if you ran the old version
 
-The previous build had three problems that need action, not just a code change:
+The previous build had two problems that need action, not just a code change:
 
 1. **Rotate your OpenAI key.** *(Done — rotated 9 Aug 2026.)* The old `app.py` ran
    `print("Loaded API Key:", os.getenv("OPENAI_API_KEY"))` on every boot, which
@@ -26,10 +26,6 @@ The previous build had three problems that need action, not just a code change:
    the sidebar query had no owner filter, so `/chat_ui` listed all sessions in
    the database to anyone who opened the site and `/session/<id>` served any of
    them. If the Render deployment was public, treat everything in it as public.
-3. **`chat_history.db` was committed** despite being listed in `.gitignore` —
-   the rule was added after the file, so it did nothing. It is untracked now,
-   and the local copy is kept as `chat_history.db.local` for the migration. The
-   file still exists in older commits.
 
 ---
 
@@ -111,21 +107,6 @@ For local development set `FLASK_ENV=development` in `.env` — it relaxes the
 
 ---
 
-## 📦 Migrating the old SQLite history
-
-The old data has no owner, so it is assigned to one account. Register through
-the web UI first, then:
-
-```bash
-python scripts/migrate_sqlite_to_postgres.py --email you@example.com --dry-run
-```
-
-Drop `--dry-run` to write. Each old row becomes a user message and an assistant
-message with the original timestamp preserved; old `session_id`s map to
-conversations. Re-running skips anything already imported.
-
----
-
 ## ☁️ Deploying to Vercel
 
 ```bash
@@ -186,7 +167,6 @@ sporadic *"prepared statement already exists"* errors under load.
 | XSS | `chatBox.innerHTML += '<span>' + userMessage + '</span>'` | User text via `textContent`; model output escaped before a fixed tag set is applied; CSP without `unsafe-inline` |
 | CSRF | No protection | Token enforced globally on every non-idempotent request |
 | Password storage | No accounts at all | scrypt via Werkzeug |
-| Committed database | `chat_history.db` tracked in git | Untracked; `.gitignore` corrected |
 | Error leakage | `return f"Error: {str(e)}"` sent driver and API errors to the browser | Logged server-side, generic message to the client |
 | Production server | `app.run()` (Werkzeug dev server) | Vercel's runtime; dev server is local-only |
 
@@ -228,7 +208,7 @@ cortexone/
   blueprints/auth.py      Register / login / logout
   blueprints/chat.py      Pages, conversation CRUD, SSE endpoint
 migrations/001_init.sql   Schema
-scripts/                  init_db, check_openai, SQLite migration
+scripts/                  init_db, check_openai
 templates/  static/       UI
 tests/                    Security and behaviour tests
 ```

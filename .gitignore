@@ -3,7 +3,7 @@
 .env.*
 !.env.example
 
-# Local databases (the old SQLite file lives here during migration)
+# Local databases
 *.db
 *.db.local
 *.sqlite
