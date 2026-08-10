@@ -29,7 +29,7 @@ The previous build had three problems that need action, not just a code change:
 3. **`chat_history.db` was committed** despite being listed in `.gitignore` —
    the rule was added after the file, so it did nothing. It is untracked now,
    and the local copy is kept as `chat_history.db.local` for the migration. The
-   file still exists in older commits; see [Scrubbing git history](#scrubbing-git-history).
+   file still exists in older commits.
 
 ---
 
@@ -250,21 +250,6 @@ tests/                    Security and behaviour tests
 | `RATE_LIMIT_PER_HOUR` | `120` | Per user; `0` disables |
 | `DB_POOL_MAX` | `5` | Connections per warm instance |
 | `FLASK_ENV` | `production` | `development` relaxes cookie security for local HTTP |
-
----
-
-## Scrubbing git history
-
-`chat_history.db` is untracked now, but older commits still contain it. It holds
-37 of your own test messages and no credentials, so this is optional. To remove
-it anyway, with [git-filter-repo](https://github.com/newren/git-filter-repo):
-
-```bash
-git filter-repo --invert-paths --path chat_history.db --force
-```
-
-That rewrites every commit hash, so force-push and re-clone anywhere else you
-have the repo.
 
 ---
 
