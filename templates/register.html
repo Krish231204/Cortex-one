@@ -4,32 +4,41 @@
 
 {% block content %}
 <main class="auth-card">
-  <h1 class="brand">CortexOne</h1>
-  <p class="auth-sub">Create an account. Your chats stay private to it.</p>
+  <div class="auth-card-inner">
+    <h1 class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+        </svg>
+      </span>
+      CortexOne
+    </h1>
+    <p class="auth-sub">Create an account. Your chats stay private to it.</p>
 
-  {% if errors %}
-    <div class="alert" role="alert">
-      {% for error in errors %}<p>{{ error }}</p>{% endfor %}
-    </div>
-  {% endif %}
+    {% if errors %}
+      <div class="alert" role="alert">
+        {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+      </div>
+    {% endif %}
 
-  <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <form method="post" action="{{ url_for('auth.register') }}" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-    <label for="email">Email</label>
-    <input id="email" name="email" type="email" value="{{ email }}"
-           autocomplete="username" required autofocus>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" value="{{ email }}"
+             autocomplete="username" required autofocus>
 
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password"
-           autocomplete="new-password" minlength="10" required>
-    <p class="field-hint">At least 10 characters.</p>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             autocomplete="new-password" minlength="10" required>
+      <p class="field-hint">At least 10 characters.</p>
 
-    <button type="submit" class="btn-primary">Create account</button>
-  </form>
+      <button type="submit" class="btn-primary">Create account</button>
+    </form>
 
-  <p class="auth-alt">
-    Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a>
-  </p>
+    <p class="auth-alt">
+      Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a>
+    </p>
+  </div>
 </main>
 {% endblock %}

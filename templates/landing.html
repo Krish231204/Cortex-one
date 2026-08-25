@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}CortexOne · Private AI chat{% endblock %}
+{% block body_class %}landing-page{% endblock %}
+
+{% block head %}
+<meta name="description" content="CortexOne is a private AI chat app. Conversations are scoped to your account, streamed live, and rendered safely. Built end to end by one engineer.">
+{% endblock %}
+
+{% block content %}
+<header class="ld-nav">
+  <span class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+      </svg>
+    </span>
+    CortexOne
+  </span>
+  <nav class="ld-nav-links" aria-label="Primary">
+    <a class="ld-nav-link ld-source" href="https://github.com/Krish231204/Cortex-one" rel="noopener">View source</a>
+    <a class="ld-nav-link" href="{{ url_for('auth.login') }}">Sign in</a>
+    <a class="btn-primary ld-nav-cta" href="{{ url_for('auth.register') }}">Create account</a>
+  </nav>
+</header>
+
+<main>
+  <section class="ld-hero">
+    <div class="ld-hero-copy">
+      <h1>AI chat that keeps your conversations yours.</h1>
+      <p class="ld-sub">Ask, and the reply streams in live. Every conversation is scoped to your account and readable by no one else.</p>
+      <div class="ld-cta-row">
+        <a class="btn-primary" href="{{ url_for('auth.register') }}">Create account</a>
+        <a class="ld-btn-ghost" href="{{ url_for('auth.login') }}">Sign in</a>
+      </div>
+    </div>
+
+    {# A real component preview: the app's actual message and composer classes,
+       styled by the same stylesheet the chat screen uses. Not a mock-up. #}
+    <div class="ld-hero-demo" aria-hidden="true">
+      <div class="ld-demo-frame">
+        <article class="msg msg-user">
+          <div class="msg-role">You</div>
+          <div class="msg-body">Explain connection pooling like I'm new to backend work.</div>
+        </article>
+        <article class="msg msg-assistant">
+          <div class="msg-role">CortexOne</div>
+          <div class="msg-body is-streaming">
+            <p>Think of database connections as checkout lanes. Opening a lane is slow and expensive, so a pool keeps a few open and hands them to requests as they arrive.</p>
+          </div>
+        </article>
+        <div class="composer-form ld-demo-composer">
+          <span class="ld-demo-placeholder">Send a message…</span>
+          <span class="btn-primary ld-demo-send">Send</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-section reveal">
+    <h2>Yours means yours.</h2>
+    <div class="ld-facts">
+      <div class="ld-fact">
+        <h3>Scoped to your account</h3>
+        <p>Every read and write is keyed to your account. Another user's conversation id returns a 404, not a transcript.</p>
+      </div>
+      <div class="ld-fact">
+        <h3>Hardened sessions</h3>
+        <p>Signing in discards all prior session state, so a planted cookie cannot survive into your session. Every state change requires a CSRF token.</p>
+      </div>
+      <div class="ld-fact">
+        <h3>No third parties</h3>
+        <p>A strict content security policy locks scripts, styles and frames to this origin. Fonts are self-hosted. There are no trackers.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-section reveal">
+    <h2>Small app, serious plumbing.</h2>
+    <div class="ld-bento">
+      <div class="ld-cell ld-cell-wide">
+        <h3>Replies stream in</h3>
+        <p>Tokens render as they arrive over server-sent events, with repaints coalesced per frame so a fast stream stays smooth.</p>
+        <div class="ld-cell-demo">
+          <article class="msg msg-assistant">
+            <div class="msg-role">CortexOne</div>
+            <div class="msg-body is-streaming"><p>Streaming means the first words arrive in milliseconds, not after the whole reply is</p></div>
+          </article>
+        </div>
+      </div>
+      <div class="ld-cell ld-cell-tint">
+        <h3>Rendered safely</h3>
+        <p>Model output is escaped first and formatted second. Markdown becomes a fixed set of tags, never live markup.</p>
+        <div class="ld-cell-demo">
+          <p class="ld-mono-line">&lt;script&gt;alert(1)&lt;/script&gt;</p>
+          <p class="ld-demo-note">arrives as text, every time</p>
+        </div>
+      </div>
+      <div class="ld-cell">
+        <h3>Titled for you</h3>
+        <p>Conversations name themselves from the first exchange. Rename or delete any of them at any time.</p>
+      </div>
+      <div class="ld-cell">
+        <h3>Rate limited</h3>
+        <p>A per-account hourly cap keeps any one user from draining the model budget.</p>
+      </div>
+      <div class="ld-cell">
+        <h3>Readable failures</h3>
+        <p>Errors surface inline and say what happened. Misconfiguration returns instructions, not a stack trace.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ld-section reveal">
+    <h2>Built in the open.</h2>
+    <p class="ld-open-body">One engineer, the whole stack. The test suite reads like a threat model: tenant isolation, CSRF, XSS escapes, open redirects, existence disclosure.</p>
+    <ul class="ld-stack" aria-label="Stack">
+      <li>Flask</li>
+      <li>PostgreSQL</li>
+      <li>Vercel</li>
+      <li>Server-sent events</li>
+      <li>pytest</li>
+    </ul>
+    <a class="ld-btn-ghost" href="https://github.com/Krish231204/Cortex-one" rel="noopener">View source</a>
+  </section>
+
+  <section class="ld-section ld-final reveal">
+    <h2>Start a private conversation.</h2>
+    <a class="btn-primary" href="{{ url_for('auth.register') }}">Create account</a>
+  </section>
+</main>
+
+<footer class="ld-footer">
+  <span class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/>
+      </svg>
+    </span>
+    CortexOne
+  </span>
+  <div class="ld-footer-links">
+    <a href="https://github.com/Krish231204" rel="noopener">Built by Krish Gupta</a>
+    <a href="https://github.com/Krish231204/Cortex-one" rel="noopener">View source</a>
+  </div>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='landing.js') }}" defer></script>
+{% endblock %}

@@ -42,7 +42,11 @@ def _sse(payload):
 
 @bp.get("/")
 def root():
-    return redirect(url_for("chat.index") if current_user() else url_for("auth.login"))
+    if current_user():
+        return redirect(url_for("chat.index"))
+    # Public landing page. It renders no user data; everything behind it
+    # still requires a session.
+    return render_template("landing.html")
 
 
 @bp.get("/chat")

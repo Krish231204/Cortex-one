@@ -13,10 +13,15 @@ from conftest import csrf_of, register
 # --- authentication is required at all ------------------------------------
 
 
-def test_root_redirects_anonymous_to_login(client):
+def test_root_serves_public_landing_without_user_data(client):
+    """The landing page is deliberately public; everything past it is not."""
     response = client.get("/")
-    assert response.status_code == 302
-    assert "/login" in response.headers["Location"]
+    assert response.status_code == 200
+    body = response.data.decode()
+    assert "Create account" in body
+    # No session-scoped UI leaks into the anonymous page.
+    assert "conversation-list" not in body
+    assert "Sign out" not in body
 
 
 def test_chat_page_requires_login(client):
